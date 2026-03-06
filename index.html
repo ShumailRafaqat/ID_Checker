@@ -197,10 +197,10 @@
       <input 
         id="insuranceID" 
         type="text" 
-        placeholder="Enter 11-digit Insurance ID"
+        placeholder="Enter 11-character ID"
         maxlength="11"
-        pattern="\d{11}"
-        inputmode="numeric"
+        pattern="[A-Za-z0-9]{11}"
+        inputmode="text"
       />
     </div>
 
@@ -213,7 +213,7 @@
 </div>
 
 <script>
-// Particle background (same as before)
+// Particle rain background
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -253,55 +253,34 @@ window.addEventListener('resize', () => {
   canvas.height = window.innerHeight;
 });
 
-// Check function - CORS fix with text/plain
-async function checkID() {
+// Simple UI demo check (no backend)
+function checkID() {
   const btn = document.getElementById('checkBtn');
   const resultDiv = document.getElementById('result');
-  const input = document.getElementById('insuranceID').value.trim();
+  const input = document.getElementById('insuranceID').value.trim().toUpperCase();
 
-  if (!/^\d{11}$/.test(input)) {
-    showResult("Enter valid 11-digit ID", "error");
+  if (!/^[A-Z0-9]{11}$/.test(input)) {
+    showResult("Enter valid 11-character ID (A-Z, 0-9)", "error");
     return;
   }
 
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scanning...';
-  resultDiv.className = '';
-  resultDiv.classList.remove('show');
 
-  try {
-    const response = await fetch(
-      "https://script.google.com/macros/s/AKfycbxqB2IKWZU5DC46HlsZsr-61N-S1fun2-3dFO8pGlxdxHo150xUl0d-DZ4HG70CrVnJ/exec",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"  // This makes it a simple request → no preflight → CORS bypass
-        },
-        body: JSON.stringify({ id: input })
-      }
-    );
+  // Fake delay for demo feel
+  setTimeout(() => {
+    // Demo mein random duplicate/unique dikha rahe hain
+    const isDuplicate = Math.random() > 0.5; // 50% chance duplicate
 
-    if (!response.ok) {
-      throw new Error("Server responded with error");
-    }
-
-    const data = await response.json();
-
-    if (data.status === "duplicate") {
-      showResult("❌ Duplicate Insurance ID Found", "error");
-    } else if (data.status === "unique") {
-      showResult("✅ Insurance ID is Unique", "success");
+    if (isDuplicate) {
+      showResult(" Duplicate ID Found", "error");
     } else {
-      showResult("⚠️ " + (data.message || "Unknown response"), "error");
+      showResult(" ID is Unique", "success");
     }
 
-  } catch (err) {
-    console.error("Fetch error:", err);
-    showResult("⚠️ Network / CORS Error - Try Again or Check Deployment", "error");
-  } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> CHECK ID';
-  }
+  }, 1200); // 1.2 second delay
 }
 
 function showResult(msg, type) {
